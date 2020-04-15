@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Index</title>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<form id="addForm">
+    Add book
+    <br>
+    <input name="bookname" placeholder="Name">
+    <br />
+    <input name="isbn" placeholder="ISBN">
+    <br />
+    <input name="author" placeholder="Author">
+    <br>
+    <button type="submit">Add Book</button>
+</form>
+<form  id="filterForm">
+    <br>
+    Filter
+    <br>
+    <input name="val" placeholder="Value">
+    <br>
+    <select name="typ">
+        <option value='0'> Name</option>
+        <option value='1' > ISBN</option>
+        <option value='2'> Author</option>
+        <option value='3'> Name&ISBN</option>
+    </select>
+    <br>
+<button type="submit">Filter</button>
+    <br>
+</form>
+<button id="getAll">Get All Books</button>
+<table border="1" width="100%">
+    <thead>
+    <td>Назва книги</td>
+    <td>ISBN</td>
+    <td>Автор</td>
+    </thead>
+   <tbody id="booksTable"></tbody>
+</table>
+<br>
+<script>
+    $(function(){
+        $('#addForm').submit(function(e){
+            e.preventDefault();
+
+            $.ajax({
+                type: 'POST',
+                url: '/booklist',
+                dataType: 'json',
+                data: JSON.stringify({
+                    name: $(this).find('[name=bookname]').val(),
+                    isbn: $(this).find('[name=isbn]').val(),
+                    author: $(this).find('[name=author]').val()
+                }),
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('Content-Type', 'application/json')
+                },
+                success: function (response) {
+
+                   var $table=$('#bookTable');
+                   console.log(response.name);
+                    $table.append('<tr><td>' + response.name + '</td><td>' + response.isbn + '</td><td>' + response.author + '</td></tr>')
+                }
+            });
+        });
+        $('#filterForm').submit(function(e) {
+            e.preventDefault();
+
+            $.ajax({
+                type: 'GET',
+                url: '/booklist',
+                dataType: 'json',
+                data: {
+                    valu: $(this).find('[name=val]').val(),
+                    typ: $(this).find('[name=typ]').val()
+                },
+                success: function (response) {
+                    var $books = $('#bookTable');
+                    $books.empty();
+                    response.forEach(function(book) {
+                        $books.append('<tr><td>' + book.name + '</td><td>' + book.isbn + '</td><td>' + book.author + '</td></tr>');
+
+                    })
+                }
+            });
+        });
+        $(function() {
+            $(document).ready(function () {
+                $.ajax({
+                    type: 'GET',
+                    url: '/booklist',
+                    success: function (response) {
+                        var $table = $('#bookTable');
+                        $table.empty();
+                        response.forEach(function (book) {
+                            $table.append('<tr><td>' + book.name + '</td><td>' + book.isbn + '</td><td>' + book.author + '</td></tr>');
+
+                        }
+                        )
+                    }
+                });
+            });
+        });
+        $('#getAll').click(function(){
+
+            $.ajax({
+                type: 'GET',
+                url: '/booklist',
+                success: function (response) {
+                    var $table = $('#bookTable');
+                    $table.empty();
+                    response.forEach(function(book) {
+                        $table.append('<tr><td>' + book.name + '</td><td>' + book.isbn + '</td><td>' + book.author + '</td></tr>');
+
+                    })
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
